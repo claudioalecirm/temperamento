@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Análise de Temperamento — Claudio Alecrim</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0a0a;--card:#111;--border:#1e1e1e;--text:#e8e0d4;--weak:#6b6055;--amber:#c8a97a;--amber2:#d4b88a}
+html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.7}
+#app{max-width:720px;margin:0 auto;padding:2rem 1.25rem}
+.topo{text-align:center;padding:2.5rem 0 2rem}
+.topo h1{font-family:'Cormorant Garamond',serif;font-size:2.4rem;font-weight:500;color:var(--amber);letter-spacing:.01em;line-height:1.2}
+.topo p{color:var(--weak);font-size:.9rem;margin-top:.5rem}
+.prog-wrap{margin-bottom:1.75rem}
+.prog-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem}
+.prog-tag{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;font-weight:500;padding:.25rem .75rem;border-radius:99px}
+.prog-count{font-size:.78rem;color:var(--weak)}
+.prog{display:flex;gap:4px}
+.pi{flex:1;height:3px;background:var(--border);border-radius:2px;transition:background .3s}
+.pi.done{background:var(--amber)}.pi.cur{background:var(--amber);opacity:.5}
+.pi.done2{background:#8c6aad}.pi.cur2{background:#8c6aad;opacity:.5}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:2rem;margin-bottom:1.5rem}
+.qtxt{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:500;line-height:1.5;margin-bottom:1.5rem}
+.ops{display:flex;flex-direction:column;gap:.6rem}
+.op{background:transparent;border:1.5px solid var(--border);border-radius:8px;padding:.85rem 1.1rem;text-align:left;color:var(--weak);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.88rem;line-height:1.5;transition:all .18s;width:100%}
+.op:hover{border-color:var(--amber);background:rgba(200,169,122,.05);color:var(--text)}
+.op.sel{border-color:var(--amber)!important;background:rgba(200,169,122,.14)!important;color:var(--amber)!important;font-weight:500}
+.op.sel2{border-color:#8c6aad!important;background:rgba(140,106,173,.14)!important;color:#b89fd4!important;font-weight:500}
+.nav{display:flex;justify-content:space-between;align-items:center;margin-top:1.5rem;gap:1rem}
+.btn{padding:.7rem 1.6rem;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--weak);font-family:'DM Sans',sans-serif;font-size:.88rem;cursor:pointer;transition:all .2s}
+.btn:hover{border-color:var(--amber);color:var(--amber)}
+.btn-off{padding:.7rem 1.6rem;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--weak);font-family:'DM Sans',sans-serif;font-size:.88rem;cursor:not-allowed;opacity:.25}
+.btn-on{padding:.7rem 1.6rem;border-radius:8px;border:1px solid var(--amber);background:var(--amber);color:#0a0a0a;font-family:'DM Sans',sans-serif;font-size:.88rem;cursor:pointer;font-weight:600;transition:all .2s}
+.btn-on:hover{background:var(--amber2)}
+.btn-on2{padding:.7rem 1.6rem;border-radius:8px;border:1px solid #8c6aad;background:#8c6aad;color:#fff;font-family:'DM Sans',sans-serif;font-size:.88rem;cursor:pointer;font-weight:600;transition:all .2s}
+.btn-on2:hover{background:#9d7bbe}
+label{font-size:.8rem;color:var(--weak);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:.4rem}
+input{width:100%;background:#0d0d0d;border:1px solid var(--border);border-radius:8px;padding:.75rem 1rem;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;transition:border .2s;margin-bottom:1rem}
+input:focus{border-color:var(--amber)}
+.res{animation:fi .5s ease}
+@keyframes fi{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.perfis-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:2rem}
+.perfil-card{border-radius:12px;padding:1.5rem;text-align:center}
+.pc-label{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;font-weight:600;margin-bottom:.75rem}
+.pc-emoji{font-size:2rem;margin-bottom:.5rem}
+.pc-nome{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;margin-bottom:.2rem}
+.pc-sub{font-size:.75rem;letter-spacing:.04em;text-transform:uppercase}
+.pc-pct{font-size:.82rem;margin-top:.6rem;opacity:.7}
+.gap-card{border-radius:12px;padding:1.5rem;margin-bottom:2rem}
+.gap-title{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:500;margin-bottom:.75rem}
+.gap-body p{font-size:.9rem;line-height:1.8;color:var(--text);margin-bottom:.75rem}
+.gap-body p:last-child{margin-bottom:0}
+.sec-header{font-size:.78rem;color:var(--weak);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.75rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)}
+.aci{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:.6rem}
+.ab{width:100%;background:transparent;border:none;padding:1rem 1.25rem;text-align:left;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--text);font-family:'DM Sans',sans-serif}
+.at{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:500}
+.ad{padding:.25rem 1.25rem 1.25rem;border-top:1px solid var(--border)}
+.ad p{color:var(--text);font-size:.9rem;line-height:1.8;margin-top:.75rem}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0}
+.lcard{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.25rem}
+.lcard h4{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.75rem;font-weight:500}
+.lcard ul{list-style:none;display:flex;flex-direction:column;gap:.5rem}
+.lcard li{font-size:.85rem;line-height:1.5;color:var(--text);padding-left:1rem;position:relative}
+.lcard li::before{content:'';position:absolute;left:0;top:.6em;width:5px;height:5px;border-radius:50%}
+.lf h4{color:#4a8c6a}.lf li::before{background:#4a8c6a}
+.ld h4{color:#c85a35}.ld li::before{background:#c85a35}
+.enc{border-radius:14px;overflow:hidden;margin-top:2rem}
+.et{padding:2rem 2rem 1.5rem}
+.etit{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:500;line-height:1.4;margin-bottom:1rem}
+.ep{font-size:.9rem;line-height:1.85;margin-bottom:.85rem;color:var(--text)}
+.edes{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.1rem;line-height:1.7;padding:1.25rem 1.5rem;margin:1.25rem 0;border-left:3px solid;border-radius:0 8px 8px 0}
+.ecta{padding:1.5rem 2rem}
+.ectlbl{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.5rem;font-weight:500}
+.ecttxt{font-size:.9rem;line-height:1.7;margin-bottom:1.25rem}
+.ectbtn{display:inline-block;padding:.75rem 1.75rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:500;cursor:pointer;text-decoration:none;border:1px solid;transition:opacity .2s;background:transparent}
+.ectbtn:hover{opacity:.75}
+.eok{background:rgba(74,140,106,.1);border:1px solid rgba(74,140,106,.3);border-radius:8px;padding:.75rem 1rem;font-size:.85rem;color:#4a8c6a;margin-bottom:1.5rem;text-align:center}
+.transicao{text-align:center;padding:2.5rem 1.5rem}
+.transicao h2{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:500;color:var(--amber);margin-bottom:.75rem}
+.transicao p{font-size:.92rem;color:var(--weak);line-height:1.7;margin-bottom:1.5rem}
+@media(max-width:560px){.perfis-grid,.grid2{grid-template-columns:1fr}.topo h1{font-size:1.8rem}.et,.ecta{padding:1.5rem}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topo">
+    <h1>Análise de Temperamento</h1>
+    <p>Descubra como sua alma foi feita para responder ao mundo</p>
+  </div>
+  <div id="root"></div>
+</div>
+<script>
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+
+const R1_BASE=[
+  {id:1,txt:"Você está num grupo sem direção clara. O que tende a acontecer com você?",ops:[
+    {s:{SAN:0,COL:0,FLE:3,MEL:2},t:"Aguardo e observo como a situação vai se desenvolver."},
+    {s:{SAN:1,COL:0,FLE:2,MEL:3},t:"Busco entender melhor o contexto antes de me posicionar."},
+    {s:{SAN:3,COL:1,FLE:0,MEL:0},t:"Tento criar um clima mais leve para facilitar a conversa."},
+    {s:{SAN:2,COL:3,FLE:0,MEL:1},t:"Sinto uma inquietação e acabo tomando alguma iniciativa."},
+  ]},
+  {id:2,txt:"Como costuma ser um dia em que não há nada urgente para resolver?",ops:[
+    {s:{SAN:0,COL:3,FLE:1,MEL:2},t:"Sinto que deveria estar produzindo algo e tenho dificuldade de relaxar."},
+    {s:{SAN:2,COL:0,FLE:1,MEL:3},t:"Oscilo entre descanso e a sensação de que poderia estar fazendo mais."},
+    {s:{SAN:1,COL:2,FLE:3,MEL:0},t:"Aproveito sem culpa. Descanso faz parte do processo."},
+    {s:{SAN:3,COL:1,FLE:2,MEL:0},t:"Ótimo. Prefiro estar com pessoas do que com tarefas."},
+  ]},
+  {id:3,txt:"Quando você está sobrecarregado, para onde sua tendência te leva?",ops:[
+    {s:{SAN:3,COL:0,FLE:1,MEL:2},t:"Para as pessoas. Conversar alivia. O isolamento piora."},
+    {s:{SAN:2,COL:1,FLE:3,MEL:0},t:"Para o silêncio. Preciso de espaço para recarregar."},
+    {s:{SAN:1,COL:3,FLE:0,MEL:2},t:"Para mais trabalho. A ação é minha válvula."},
+    {s:{SAN:0,COL:2,FLE:2,MEL:3},t:"Para dentro. Fico na minha cabeça processando em loop."},
+  ]},
+  {id:4,txt:"Você erra em algo que afeta alguém próximo. Como costuma sair dessa situação?",ops:[
+    {s:{SAN:3,COL:1,FLE:2,MEL:0},t:"Me desculpo na hora e consigo seguir sem carregar por muito tempo."},
+    {s:{SAN:2,COL:0,FLE:3,MEL:1},t:"Demoro para agir, mas quando peço desculpa é sincero e encerro o assunto."},
+    {s:{SAN:0,COL:3,FLE:1,MEL:2},t:"Peço desculpa, mas internamente ainda analiso a contribuição do outro."},
+    {s:{SAN:1,COL:2,FLE:0,MEL:3},t:"O peso fica por dentro mesmo depois de resolvido externamente."},
+  ]},
+  {id:5,txt:"Como você lida quando alguém ao seu redor trabalha num ritmo muito diferente do seu?",ops:[
+    {s:{SAN:2,COL:1,FLE:3,MEL:0},t:"Me adapto com facilidade. Cada pessoa tem seu tempo."},
+    {s:{SAN:0,COL:2,FLE:2,MEL:3},t:"Observo e tento entender o porquê sem interferir diretamente."},
+    {s:{SAN:3,COL:1,FLE:0,MEL:2},t:"Consigo ter paciência externamente, mas internamente já estou pensando em como agilizar."},
+    {s:{SAN:1,COL:3,FLE:0,MEL:2},t:"Sinto tensão real e tenho dificuldade de não deixar transparecer."},
+  ]},
+  {id:6,txt:"Depois de entregar um resultado significativo, o que predomina em você?",ops:[
+    {s:{SAN:1,COL:2,FLE:3,MEL:0},t:"Gratidão tranquila. Fico bem sem precisar de reconhecimento externo."},
+    {s:{SAN:2,COL:0,FLE:1,MEL:3},t:"Começo a analisar o que poderia ter sido feito de forma diferente."},
+    {s:{SAN:3,COL:1,FLE:2,MEL:0},t:"Quero celebrar com as pessoas que estiveram no processo."},
+    {s:{SAN:0,COL:3,FLE:1,MEL:2},t:"Uma satisfação intensa e já começo a pensar no próximo passo."},
+  ]},
+  {id:7,txt:"Como você costuma se sentir num ambiente social com muitas pessoas que não conhece?",ops:[
+    {s:{SAN:3,COL:0,FLE:1,MEL:2},t:"Em casa. Conhecer pessoas novas me energiza."},
+    {s:{SAN:0,COL:3,FLE:1,MEL:2},t:"Funciono bem se houver um propósito claro para estar lá."},
+    {s:{SAN:1,COL:2,FLE:3,MEL:0},t:"Prefiro ambientes menores, mas me adapto quando necessário."},
+    {s:{SAN:2,COL:0,FLE:2,MEL:3},t:"Prefiro a profundidade de poucos vínculos a um ambiente amplo."},
+  ]},
+  {id:8,txt:"As pessoas próximas a você como descreveriam sua presença emocional no dia a dia?",ops:[
+    {s:{SAN:3,COL:0,FLE:2,MEL:1},t:"Caloroso e acessível. Entro no emocional dos outros com naturalidade."},
+    {s:{SAN:2,COL:1,FLE:3,MEL:0},t:"Estável. Não sou expansivo, mas estou disponível quando precisam."},
+    {s:{SAN:0,COL:2,FLE:1,MEL:3},t:"Difícil de acessar. Processo muito internamente antes de compartilhar."},
+    {s:{SAN:1,COL:3,FLE:0,MEL:2},t:"Presente nas ações, mas o lado emocional não é onde me destaco."},
+  ]},
+  {id:9,txt:"Quando precisa tomar uma decisão importante, como você chega até ela?",ops:[
+    {s:{SAN:3,COL:1,FLE:2,MEL:0},t:"Confio no que sinto no momento e decido com agilidade."},
+    {s:{SAN:0,COL:3,FLE:1,MEL:2},t:"Pela lógica e pelo objetivo. Analiso e decido com firmeza."},
+    {s:{SAN:2,COL:2,FLE:3,MEL:0},t:"Prefiro ter tempo para processar. Decido melhor sem pressão."},
+    {s:{SAN:1,COL:0,FLE:1,MEL:3},t:"Analiso em profundidade e às vezes demoro mais do que gostaria."},
+  ]},
+  {id:10,txt:"O que as pessoas que convivem com você tendem a reconhecer primeiro?",ops:[
+    {s:{SAN:3,COL:0,FLE:1,MEL:2},t:"Minha energia e a leveza que trago para os ambientes."},
+    {s:{SAN:0,COL:3,FLE:1,MEL:2},t:"Minha capacidade de fazer acontecer e de liderar."},
+    {s:{SAN:1,COL:2,FLE:3,MEL:0},t:"Minha estabilidade e a confiança que transmito."},
+    {s:{SAN:2,COL:0,FLE:1,MEL:3},t:"Minha profundidade e o cuidado com os detalhes."},
+  ]},
+];
+
+const R2_BASE=[
+  {id:11,txt:"Você está numa reunião importante e precisa posicionar uma ideia diante de pessoas que vão te avaliar. Como você age?",ops:[
+    {s:{SAN:0,COL:0,FLE:3,MEL:2},t:"Espero o momento certo e falo com cuidado, pensando em como será recebido."},
+    {s:{SAN:1,COL:0,FLE:2,MEL:3},t:"Organizo meu raciocínio com calma antes de falar, buscando precisão."},
+    {s:{SAN:3,COL:1,FLE:0,MEL:0},t:"Me envolvo naturalmente e busco criar conexão com quem está ouvindo."},
+    {s:{SAN:2,COL:3,FLE:0,MEL:1},t:"Falo com clareza e convicção. Não tenho dificuldade de me impor nesses momentos."},
+  ]},
+  {id:12,txt:"Quando recebe um feedback crítico na frente de outras pessoas, o que acontece com você?",ops:[
+    {s:{SAN:1,COL:0,FLE:3,MEL:2},t:"Absorvo em silêncio e processo depois, sem demonstrar muito externamente."},
+    {s:{SAN:3,COL:1,FLE:2,MEL:0},t:"Me recupero rápido. Não gosto de parecer abalado publicamente."},
+    {s:{SAN:0,COL:3,FLE:1,MEL:2},t:"Tenho vontade de responder na hora e com frequência faço isso."},
+    {s:{SAN:2,COL:2,FLE:0,MEL:3},t:"Fico quieto por fora, mas por dentro analiso cada detalhe do que foi dito."},
+  ]},
+  {id:13,txt:"Numa situação de crise onde você é responsável e todos estão te olhando, como você reage?",ops:[
+    {s:{SAN:0,COL:3,FLE:1,MEL:2},t:"Tomo as rédeas imediatamente. Crise é o ambiente onde funciono melhor."},
+    {s:{SAN:3,COL:1,FLE:0,MEL:2},t:"Tento manter a calma e criar um clima de confiança antes de agir."},
+    {s:{SAN:2,COL:2,FLE:3,MEL:0},t:"Busco estabilizar a situação sem drama. Foco no que pode ser feito."},
+    {s:{SAN:1,COL:0,FLE:2,MEL:3},t:"Analiso antes de agir. Prefiro acertar do que agir rápido e errar."},
+  ]},
+  {id:14,txt:"Quando precisa discordar de alguém com mais autoridade do que você, o que acontece?",ops:[
+    {s:{SAN:0,COL:3,FLE:1,MEL:2},t:"Discordo diretamente. Hierarquia não me impede de falar o que penso."},
+    {s:{SAN:3,COL:1,FLE:2,MEL:0},t:"Busco um jeito leve de colocar minha perspectiva sem criar tensão."},
+    {s:{SAN:2,COL:2,FLE:3,MEL:0},t:"Espero o momento adequado e coloco minha visão com cuidado."},
+    {s:{SAN:1,COL:0,FLE:1,MEL:3},t:"Processo internamente primeiro e só falo se tiver muita certeza."},
+  ]},
+  {id:15,txt:"Em situações profissionais ou sociais de alta exposição, como você se apresenta?",ops:[
+    {s:{SAN:3,COL:0,FLE:1,MEL:2},t:"Me conecto facilmente. Ambientes sociais me energizam mesmo quando são formais."},
+    {s:{SAN:0,COL:3,FLE:1,MEL:2},t:"Me posiciono com autoridade. Prefiro ser lembrado do que passar despercebido."},
+    {s:{SAN:2,COL:1,FLE:3,MEL:0},t:"Me comporto com equilíbrio. Não busco holofote, mas também não me escondo."},
+    {s:{SAN:1,COL:2,FLE:0,MEL:3},t:"Sou mais reservado. Prefiro que meu trabalho fale por mim."},
+  ]},
+  {id:16,txt:"Quando um projeto sob sua responsabilidade está em risco de fracassar, o que predomina?",ops:[
+    {s:{SAN:1,COL:3,FLE:0,MEL:2},t:"Intensidade. Faço o que for necessário para reverter, mesmo sob pressão máxima."},
+    {s:{SAN:3,COL:1,FLE:2,MEL:0},t:"Busco apoio e envolvo as pessoas. Junto somos mais fortes."},
+    {s:{SAN:0,COL:2,FLE:3,MEL:1},t:"Mantenho a cabeça fria e foco no que ainda pode ser controlado."},
+    {s:{SAN:2,COL:0,FLE:1,MEL:3},t:"Analiso o que deu errado e o que deveria ter feito diferente."},
+  ]},
+  {id:17,txt:"Como você age quando percebe que está sendo comparado a alguém considerado melhor do que você?",ops:[
+    {s:{SAN:0,COL:3,FLE:1,MEL:2},t:"Me motiva. Tenho vontade de provar o meu valor de forma concreta."},
+    {s:{SAN:3,COL:1,FLE:2,MEL:0},t:"Levo na leveza. Não preciso ganhar toda comparação."},
+    {s:{SAN:1,COL:2,FLE:3,MEL:0},t:"Me mantenho no meu ritmo. Comparação externa não me desestabiliza muito."},
+    {s:{SAN:2,COL:0,FLE:1,MEL:3},t:"Sinto internamente. Fico ruminando se realmente não sou bom o suficiente."},
+  ]},
+  {id:18,txt:"Quando precisa pedir algo difícil — um favor, um aumento, uma oportunidade — como você se comporta?",ops:[
+    {s:{SAN:3,COL:1,FLE:2,MEL:0},t:"Com naturalidade. Criar conexão antes do pedido é meu jeito natural."},
+    {s:{SAN:0,COL:3,FLE:1,MEL:2},t:"Direto e objetivo. Apresento os argumentos e peço sem rodeios."},
+    {s:{SAN:1,COL:2,FLE:3,MEL:0},t:"Espero o momento certo e peço de forma calma e fundamentada."},
+    {s:{SAN:2,COL:0,FLE:1,MEL:3},t:"Tenho dificuldade. Fico preparando muito antes de agir e às vezes não chego a pedir."},
+  ]},
+  {id:19,txt:"Diante de uma mudança imposta — nova liderança, nova regra, nova estrutura — como você reage?",ops:[
+    {s:{SAN:3,COL:1,FLE:2,MEL:0},t:"Me adapto com agilidade. Prefiro encontrar o lado positivo e seguir."},
+    {s:{SAN:0,COL:3,FLE:1,MEL:2},t:"Avalio rapidamente se faz sentido. Se não faz, questiono antes de aceitar."},
+    {s:{SAN:1,COL:2,FLE:3,MEL:0},t:"Aceito sem drama. Mudança faz parte e me adapto no meu tempo."},
+    {s:{SAN:2,COL:0,FLE:1,MEL:3},t:"Processo com cautela. Mudança me gera desconforto até entender o impacto real."},
+  ]},
+  {id:20,txt:"Quando alguém próximo te desafia publicamente ou questiona sua capacidade, o que acontece?",ops:[
+    {s:{SAN:3,COL:1,FLE:2,MEL:0},t:"Sinto o impacto, mas logo prefiro transformar a tensão em algo mais leve."},
+    {s:{SAN:0,COL:3,FLE:1,MEL:2},t:"Respondo na hora. Não deixo questionamento sobre minha capacidade passar sem resposta."},
+    {s:{SAN:1,COL:2,FLE:3,MEL:0},t:"Mantenho a calma externamente. Respondo com segurança, sem drama."},
+    {s:{SAN:2,COL:0,FLE:0,MEL:3},t:"Fica fundo. Mesmo que não demonstre, o questionamento fica ocupando espaço interno."},
+  ]},
+];
+
+const R1=shuffle(R1_BASE).map(q=>({...q,ops:shuffle(q.ops)}));
+const R2=shuffle(R2_BASE).map(q=>({...q,ops:shuffle(q.ops)}));
+const TOTAL=20;
+
+const CORS={SAN:'#4a90d9',COL:'#c85a35',FLE:'#4a8c6a',MEL:'#8c6aad'};
+const NOM={SAN:'Sanguíneo',COL:'Colérico',FLE:'Fleumático',MEL:'Melancólico'};
+const EMJ={SAN:'☀️',COL:'🔥',FLE:'🌊',MEL:'🌑'};
+const ELE={SAN:'Ar',COL:'Fogo',FLE:'Água',MEL:'Terra'};
+
+const SECS={
+  SAN:[
+    {t:"O que é temperamento",c:["Temperamento não é personalidade. Não é resultado de como você foi criado, do que viveu ou do que aprendeu. É a estrutura da alma, o modo como você nasceu reagindo ao mundo, processando estímulos, respondendo à pressão e ao desafio. É o ponto de partida, não o destino.","Hipócrates foi o primeiro a sistematizar isso. Tim LaHaye o trouxe para o vocabulário cristão. Boaventura o aprofundou pela tradição filosófica. Há quatro padrões que cruzam culturas e gerações, e o seu é o do Ar.","Entender o seu temperamento não é um ato de autoindulgência. É o primeiro movimento de quem decide parar de ser governado pelo que nunca escolheu, e começar a ser dirigido pelo que decidiu se tornar."]},
+    {t:"Como o sanguíneo vê o mundo",c:["O sanguíneo vê o mundo como uma festa que não deveria terminar. Sua leitura da realidade é imediata, colorida e relacional. Onde outros veem problema, ele vê possibilidade. Onde outros veem conflito, ele vê um equívoco que um bom papo resolve.","Boaventura descreve o sanguíneo como o temperamento que reage prontamente e com intensidade, mas não guarda a impressão por muito tempo. É fogo de palha: acende rápido, arde forte, e se apaga antes que os outros percebam. Essa leveza é ao mesmo tempo o maior dom e o maior risco.","Esse homem enxerga oportunidade em qualquer ambiente. Cria conexão com estranhos em minutos. Não precisa de preparação para estar presente, porque ele naturalmente está. O problema começa quando o ambiente exige que ele continue presente depois que o entusiasmo foi embora."]},
+    {t:"Como o sanguíneo reage ao mundo",c:["A reação do sanguíneo é ao outro. Ao relacionamento. Ao ambiente. Quando o ambiente está tenso, ele sofre. Quando está animado, ele se multiplica. Quando se sente amado, produz. Quando se sente ignorado, murcha. Sua energia é profundamente relacional.","LaHaye descreve Pedro como o sanguíneo mais estudado da Bíblia: falava antes de pensar, agia antes de calcular, amava com intensidade e logo depois negava o que mais amava. Não por maldade. Por instabilidade. O afeto do momento tinha mais peso do que o compromisso do passado.","A reação do sanguíneo sob pressão não é ira nem paralisia. É fuga emocional. Ele muda de assunto, alivia a tensão com humor, redireciona para algo mais agradável. Não porque não sente, mas porque sentir fundo demais é desconfortável para quem vive na superfície do presente."]},
+    {t:"Como o sanguíneo interpreta o mundo",c:["O sanguíneo interpreta o mundo através das relações. Uma situação só é boa se as pessoas ao redor estão bem. Um projeto só vale a pena se há alegria no processo. Uma verdade difícil precisa ser embrulhada em calor humano para ser recebida.","Boaventura aponta que o sanguíneo tende a adaptar-se ao grupo, a capturar o humor do ambiente como uma esponja. Isso é bom para relacionamentos. É perigoso para a formação de caráter. O homem que se torna o que o ambiente pede raramente descobre quem realmente é.","O sanguíneo tende a interpretar conflitos como pessoais quando não são, e a minimizar problemas reais quando o ambiente está bem. Sua leitura da realidade é colorida pela emoção do momento, o que o faz muito vivo e às vezes impreciso nas avaliações que mais importam."]},
+    {t:"O sanguíneo maduro",c:["O sanguíneo maduro é uma das presenças mais contagiantes que existem. É calor sem falsidade, entusiasmo com raízes, alegria que não depende de audiência.","LaHaye descreve Pedro depois do Pentecostes: o mesmo temperamento, a mesma intensidade, a mesma presença magnética, mas agora ancorado. Pedro pregou a três mil pessoas com a mesma espontaneidade de sempre. A diferença é que quando saiu do barco, desta vez não afundou.","O sanguíneo maduro aprendeu que promessa é dívida. Que entusiasmo sem constância é crueldade com quem depende de você. Que a alegria real não é a que se performa para ser querido, é a que persiste quando ninguém está olhando. Que terminar o que começou é uma forma de amor tão poderosa quanto começar com alegria."]},
+    {t:"O sanguíneo imaturo",c:["O sanguíneo imaturo consome os que o amam. Não por maldade, por inconstância.","Boaventura é preciso: o sanguíneo desordenado promete tudo e cumpre pouco. Começa dezenas de coisas e raramente termina uma. Suas emoções governam suas escolhas. Quando o sentimento passa, o compromisso some junto. É extremamente agradável de conviver na superfície, e devastador nas relações profundas.","LaHaye descreve Pedro negando Jesus três vezes não como fraqueza moral, mas como fraqueza temperamental não submetida. As emoções do presente atropelaram o compromisso eterno. As pessoas que amam um sanguíneo imaturo aprendem a não contar com o que ele promete quando está animado. Esse aprendizado, silencioso e gradual, é uma das formas mais dolorosas de solidão."]},
+  ],
+  COL:[
+    {t:"O que é temperamento",c:["Temperamento não é personalidade. Não é resultado de como você foi criado, do que viveu ou do que aprendeu. É a estrutura da alma, o modo como você nasceu reagindo ao mundo, processando estímulos, respondendo à pressão e ao desafio. É o ponto de partida, não o destino.","Hipócrates foi o primeiro a sistematizar isso. Tim LaHaye o trouxe para o vocabulário cristão. Boaventura o aprofundou pela tradição filosófica. Há quatro padrões que cruzam culturas e gerações, e o seu é o do Fogo.","Entender o seu temperamento não é um ato de autoindulgência. É o primeiro movimento de quem decide parar de ser governado pelo que nunca escolheu, e começar a ser dirigido pelo que decidiu se tornar."]},
+    {t:"Como o colérico vê o mundo",c:["O colérico vê o mundo como um conjunto de problemas a resolver e resultados a conquistar. Sua leitura da realidade é imediata, prática e orientada à ação. Onde outros veem complexidade, ele vê obstáculo. Onde outros veem processo, ele vê atraso.","Boaventura descreve o colérico como aquele que reage prontamente e com intensidade, e guarda essa impressão de forma profunda e duradoura. É fogo: acende rápido, expande com força, não se deixa apagar facilmente. A ação é o idioma natural da sua alma.","O colérico enxerga oportunidades onde outros enxergam risco. Identifica liderança como um estado natural, não uma responsabilidade conquistada. Diante de um grupo sem direção, ele naturalmente assume. Não apenas por ego, mas porque algo dentro dele genuinamente não aguenta assistir ao caos sem agir."]},
+    {t:"Como o colérico reage ao mundo",c:["O colérico reage com velocidade e decisão. Essa reação não é apenas às circunstâncias externas. É sobretudo às pessoas que não correspondem ao padrão que ele carrega dentro de si.","Quando alguém falha, reage com irritação. Quando alguém discorda, reage com argumentação imediata. Quando perde o controle de uma situação, age para recuperá-lo. Quando é criticado, se defende ou encontra o erro do crítico.","Boaventura usa o conceito de apetite irascível: o impulso em direção ao bem difícil, ao transcendente, ao que exige luta. No colérico, esse impulso está nas alturas. É por isso que ele não descansa quando há algo a conquistar. É por isso que a mediocridade ao redor o incomoda de forma física, visceral."]},
+    {t:"Como o colérico interpreta o mundo",c:["O colérico interpreta o mundo através do filtro da eficiência e do resultado. Uma conversa boa é uma conversa que produz algo. Uma relação boa é uma relação que funciona, onde cada um cumpre seu papel.","Isso não é frieza. É arquitetura. O colérico ama com intensidade. Mas sua linguagem de amor tende a ser ação: fazer, prover, resolver, proteger. O problema é que quem está ao lado frequentemente precisa de outra linguagem, e o colérico muitas vezes não percebe a diferença entre o que oferece e o que o outro precisa receber.","LaHaye descreve Paulo como o colérico mais estudado da Bíblia, um homem que via tudo com propósito. Não corro sem alvo, não luto como quem esmurra o ar. Isso é colérico em síntese: o mundo inteiro lido como uma corrida com destino. Tudo o que não contribui para esse destino é desperdício."]},
+    {t:"O colérico maduro",c:["O colérico maduro é uma das presenças mais extraordinárias que existem. LaHaye descreve um empresário de 72 anos que construiu igrejas, transformou empresas, e havia se tornado tão ponderado que os ao redor mal acreditavam ser o mesmo homem de fogo de décadas atrás.","O que mudou? As forças permaneceram: organização, iniciativa, otimismo criativo, persistência. Mas a ira desapareceu. A amargura foi embora. A crueldade que costumava vazar nas bordas da sua força foi substituída por compaixão genuína.","Boaventura descreve esse homem como a brasa: aquece e ilumina, em vez de destruir. A temperatura é a mesma. A força está intacta. Mas ela está governada. O colérico maduro aprendeu a ouvir antes de agir, a perguntar antes de concluir, e que sua força entregue a algo maior do que ele produz legado, não apenas resultado."]},
+    {t:"O colérico imaturo",c:["O colérico imaturo é devastador, especialmente para quem mais o ama. Não por maldade. Por força sem governo.","LaHaye descreve Saulo antes da conversão, respirando ameaças, não por ser mau, mas por ter liderança natural inteiramente desregulada. Toda a força apontada para a direção errada. Boaventura chama de pimenta passada do ponto: o que deveria dar sabor destrói o prato.","Há uma insegurança velada no colérico imaturo, um sentimento de não poder errar. E porque não pode errar, não reconhece o erro. E porque não reconhece, não cresce. A marca mais perigosa do colérico imaturo não é a raiva que explode. É a insegurança escondida embaixo da armadura. É o homem que todos temem e ninguém realmente conhece."]},
+  ],
+  FLE:[
+    {t:"O que é temperamento",c:["Temperamento não é personalidade. Não é resultado de como você foi criado, do que viveu ou do que aprendeu. É a estrutura da alma, o modo como você nasceu reagindo ao mundo, processando estímulos, respondendo à pressão e ao desafio. É o ponto de partida, não o destino.","Hipócrates foi o primeiro a sistematizar isso. Tim LaHaye o trouxe para o vocabulário cristão. Boaventura o aprofundou pela tradição filosófica. Há quatro padrões que cruzam culturas e gerações, e o seu é o da Água.","Entender o seu temperamento não é um ato de autoindulgência. É o primeiro movimento de quem decide parar de ser governado pelo que nunca escolheu, e começar a ser dirigido pelo que decidiu se tornar."]},
+    {t:"Como o fleumático vê o mundo",c:["O fleumático vê o mundo com equanimidade e paciência. Sua leitura da realidade é pausada, ponderada e orientada à estabilidade. Onde outros enxergam urgência, ele vê algo que pode esperar. Onde outros reagem, ele observa.","Boaventura descreve o fleumático como aquele que não reage com intensidade imediata, e também não guarda a impressão por muito tempo. É água: se move com calma, encontra sempre o caminho mais suave, e tem uma força profunda que só aparece quando acumulada.","Esse homem é o menos dramático dos quatro temperamentos. E frequentemente o mais subestimado, inclusive por si mesmo. Sua estabilidade parece óbvia aos outros porque é constante, mas ela é uma âncora que todos ao redor precisam mais do que percebem."]},
+    {t:"Como o fleumático reage ao mundo",c:["O fleumático reage devagar e suavemente. Não porque não sente, mas porque seu tempo de processamento é mais longo. Onde o colérico já explodiu e o sanguíneo já falou tudo, o fleumático ainda está avaliando a situação com cuidado.","LaHaye descreve isso como uma vantagem real: o fleumático raramente diz coisas que vai se arrepender. Não entra em conflito por impulso. Tem uma estabilidade emocional que os outros temperamentos invejam.","Mas há um perigo que Boaventura chama de efeito tsunami: depois de recuar e guardar muitas coisas para si, o fleumático pode ter uma reação desproporcional. Uma onda que se formou longe e chega com força inesperada. As pessoas ao redor, acostumadas com a sua calma, ficam genuinamente sem entender de onde veio."]},
+    {t:"Como o fleumático interpreta o mundo",c:["O fleumático interpreta o mundo através da lente da paz e da harmonia. Conflito é algo a ser evitado. Mudança rápida é algo desconfortável. Pressão é algo que ele suporta muito melhor do que demonstra.","Sua leitura das situações tende a ser moderada e diplomática. Raramente toma partido extremo. Consegue ver os dois lados de qualquer questão com facilidade, o que o torna um mediador natural, mas às vezes um líder difícil de ler.","Boaventura destaca que o fleumático, quando vê a verdade, é capaz de dar a vida por ela. Não por emoção, por convicção. Quando decide algo com calma, decide de forma permanente. A água parece suave, mas é ela que esculpe a pedra. O problema é quando a calma se torna o jeito de não decidir nada."]},
+    {t:"O fleumático maduro",c:["O fleumático maduro é uma das pessoas mais sólidas que se pode ter ao lado. Age por princípio, não por instinto ou aprovação. Tem uma profundidade de caráter que só aparece com o tempo, e o tempo é exatamente o que ele usa a seu favor.","Boaventura aponta São Tomás de Aquino como referência: chamado de boi mudo pelos colegas de seminário, processava tudo em silêncio enquanto os outros debatiam. Produziu uma das obras intelectuais mais extraordinárias da história. A calma não era ausência de força. Era forma de força.","O fleumático maduro aprendeu a quebrar o silêncio quando é necessário. A ocupar o espaço de liderança que seu temperamento naturalmente abdicaria. A entender que a paz que ele oferece ao ambiente é uma dádiva, não uma obrigação. E que às vezes, proteger quem ama exige o conflito que ele mais detesta."]},
+    {t:"O fleumático imaturo",c:["O fleumático imaturo desaparece. Não de forma dramática, mas gradual, e isso é o que torna perigoso.","Boaventura nomeia sua fraqueza principal como acídia, uma preguiça ontológica que o faz preferir o mundo dos próprios pensamentos à realidade nua e crua. Recua diante de conflitos. Evita posicionamentos. Prefere o silêncio à confrontação necessária.","LaHaye descreve o fleumático imaturo como alguém que constrói uma câmara de som para a própria psique e entra nela cada vez que o ambiente exige algo dele. Em casa, está presente fisicamente e ausente emocionalmente de uma forma que a família já parou de tentar alcançar. E o fleumático, por não sentir o drama, não percebe o que está custando. Até que o custo se torna irreversível."]},
+  ],
+  MEL:[
+    {t:"O que é temperamento",c:["Temperamento não é personalidade. Não é resultado de como você foi criado, do que viveu ou do que aprendeu. É a estrutura da alma, o modo como você nasceu reagindo ao mundo, processando estímulos, respondendo à pressão e ao desafio. É o ponto de partida, não o destino.","Hipócrates foi o primeiro a sistematizar isso. Tim LaHaye o trouxe para o vocabulário cristão. Boaventura o aprofundou pela tradição filosófica. Há quatro padrões que cruzam culturas e gerações, e o seu é o da Terra.","Entender o seu temperamento não é um ato de autoindulgência. É o primeiro movimento de quem decide parar de ser governado pelo que nunca escolheu, e começar a ser dirigido pelo que decidiu se tornar."]},
+    {t:"Como o melancólico vê o mundo",c:["O melancólico vê o mundo com profundidade, análise e uma sensibilidade que os outros temperamentos raramente alcançam. Sua leitura da realidade é lenta, detalhada e frequentemente precisa. Ele nota o que os outros ignoram.","Boaventura descreve o melancólico como aquele que não reage com intensidade imediata, mas guarda a impressão de forma profunda e duradoura. É a fogueira que demora a acender, mas que, uma vez acesa, é difícil de apagar. Seus sulcos na alma são permanentes.","Esse homem enxerga a beleza nos detalhes, a dor no que outros passam reto, e o problema em qualquer sistema antes que ele aconteça. Quando o melancólico diz que algo vai dar errado, vale ouvir. Ele provavelmente já calculou três cenários que os outros nem consideraram."]},
+    {t:"Como o melancólico reage ao mundo",c:["O melancólico reage internamente, muito antes de qualquer reação externa. Enquanto os outros já agiram e esqueceram, ele ainda está processando, analisando, questionando, reavaliando.","LaHaye descreve isso como uma virtude real: o melancólico raramente age por impulso. Suas decisões são criteriosas. Suas palavras são pesadas. Seus compromissos são sérios. Quando ele decide estar, está de verdade.","Mas há um perigo: a memória sui que Boaventura descreve, a tendência de remoer o que aconteceu, reabrir feridas que já estavam começando a sarar. O melancólico pode passar anos processando uma frase que o outro disse e esqueceu no dia seguinte. E esse processamento, sem saída, vira sofrimento."]},
+    {t:"Como o melancólico interpreta o mundo",c:["O melancólico interpreta o mundo através de uma lente de significado e profundidade. Superficialidade o entedia. Conversas sem substância o esgotam. Relacionamentos rasos o deixam mais só do que estar sozinho.","Sua busca é pelo autêntico, pelo excelente, pelo verdadeiro. Isso o torna um dos parceiros mais leais e profundos que existem. E um dos mais difíceis de satisfazer. Porque o padrão que aplica ao mundo, aplica a si mesmo com ainda mais rigor.","Boaventura aponta que o melancólico, quando ligado à esperança, tem todo o potencial para crescer profundamente nas virtudes. O mesmo peso que o puxou para baixo pode, redirecionado, se tornar a âncora que o mantém firme quando todos os outros cederam."]},
+    {t:"O melancólico maduro",c:["O melancólico maduro é uma presença rara e extraordinária. Combina profundidade com leveza. Análise com compaixão. Exigência consigo mesmo com misericórdia pelo outro.","João era o melancólico mais profundo do Novo Testamento. O único que ficou ao pé da cruz. A mesma sensibilidade que o fazia chorar com mais facilidade também o fez permanecer quando todos fugiram. Sua profundidade não era fraqueza. Era a raiz da coragem mais silenciosa da história.","O melancólico maduro aprendeu a diferença entre memória que serve e memória que aprisiona. Aprendeu a ver seus próprios erros com objetividade sem entrar em colapso. E aprendeu, talvez o mais difícil de todos, a dar a si mesmo a mesma misericórdia que oferece aos outros. Esse passo, para o melancólico, muda tudo."]},
+    {t:"O melancólico imaturo",c:["O melancólico imaturo é o prisioneiro mais cruel, porque é prisioneiro de si mesmo.","Boaventura descreve o ensimesmamento como o grande perigo: uma hipnose interna que faz o melancólico se trancar e hiperdimensionar a si mesmo e as coisas que lhe aconteceram. A análise infinita que nunca chega a uma conclusão libertadora.","LaHaye descreve a tendência ao pessimismo, à autocrítica excessiva, à dificuldade de decidir pelo medo do erro, à tendência de carregar décadas de situações que outros esqueceram na semana seguinte. O melancólico imaturo sofre mais do que a realidade exige, com uma precisão analítica que usa contra si mesmo. E porque esse sofrimento é interno e silencioso, ninguém ao redor sabe o quanto ele carrega."]},
+  ],
+};
+
+const FORTES={
+  SAN:["Calor humano genuíno — faz as pessoas se sentirem bem","Entusiasmo contagiante — mobiliza ambientes e grupos","Adaptabilidade — encontra o bem em qualquer situação","Otimismo natural — vê possibilidade onde outros veem obstáculo","Capacidade relacional — cria vínculos com facilidade","Expressividade — comunica com vida e emoção"],
+  COL:["Liderança natural — assume sem precisar de convite","Força de vontade extraordinária — persiste onde outros desistem","Clareza de objetivo — age com propósito","Otimismo produtor — vê possibilidade onde outros veem obstáculo","Autoconfiança — avança mesmo sem garantias externas","Magnanimidade — capaz de lutar por bens grandes a longo prazo"],
+  FLE:["Estabilidade emocional — a rocha que não oscila com o vento","Paciência genuína — tolera processos longos sem perder a paz","Capacidade de ouvir — não compete para falar","Diplomacia natural — navega conflitos sem inflamar","Confiabilidade — quando compromete, cumpre","Presença pacificadora — reduz a temperatura de qualquer ambiente"],
+  MEL:["Profundidade analítica — enxerga o que os outros não veem","Sensibilidade genuína — sente o mundo com intensidade real","Lealdade rara — quando ama, ama com constância","Excelência — não aceita o medíocre em si mesmo","Empatia profunda — sente a dor do outro como se fosse sua","Comprometimento sério — não promete o que não pode cumprir"],
+};
+const DESENVOLVER={
+  SAN:["Inconstância — começa muito e termina pouco","Comprometimento fraco — a promessa evapora com o sentimento","Dependência de aprovação — o humor do ambiente o controla","Impulsividade — decide pela emoção do momento","Evitação do conflito — prefere agradar a resolver","Superficialidade relacional — muitos conhecidos, poucos vínculos reais"],
+  COL:["Orgulho estrutural — dificuldade de enxergar os próprios pontos cegos","Ira como válvula — reage com intensidade antes de processar","Teimosia que se disfarça de convicção","Insensibilidade relacional — foco em resultado às custas da presença","Autossuficiência — age por conta própria mesmo quando deveria consultar","Dificuldade com vulnerabilidade — a armadura não se abre"],
+  FLE:["Acídia — a preguiça ontológica que evita o esforço difícil","Passividade — deixa a vida acontecer em vez de dirigi-la","Evitação de conflito — o silêncio frequentemente é omissão","Efeito tsunami — o que não é expresso acumula e explode","Falta de iniciativa — espera ser chamado em vez de agir","Distância emocional — presença física sem presença afetiva"],
+  MEL:["Pessimismo estrutural — a inclinação ao pior cenário","Ensimesmamento — o loop interno que não para","Autocrítica excessiva — o padrão impossível aplicado a si mesmo","Paralisia decisória — o medo do erro trava a ação","Dificuldade de perdoar — a memória guarda o que deveria soltar","Tendência à tristeza — a emoção de fundo é pesada"],
+};
+
+function textoGap(nat,ada){
+  if(nat===ada)return{titulo:"Perfil natural e adaptado alinhados",cor:"#4a8c6a",bg:"rgba(74,140,106,.07)",border:"rgba(74,140,106,.25)",corpo:["Você é o mesmo homem em público e em privado. O que aparece quando está sob pressão, avaliação ou exposição é o mesmo que aparece quando ninguém está olhando. Isso é raro e é uma forma de integridade profunda.","Não há custo energético de adaptação. Não há versão diferente de você sendo sustentada por esforço consciente. O que você é, você é. E isso se percebe. As pessoas ao redor sentem a consistência, mesmo que não saibam nomear de onde ela vem.","Esse alinhamento é uma das bases do que o Ponto de Ruptura chama de homem integrado: aquele cujas quatro áreas, Deus, si mesmo, família e negócios, são governadas pelo mesmo centro. Você tem essa base. O trabalho agora é aprofundá-la."]};
+  const pares={
+    'COL-SAN':{titulo:"Você se adapta ao sorriso, mas o fogo continua aceso",corpo:["Seu temperamento real é o do Fogo. Mas sob pressão, exposição ou avaliação, você aprendeu a cobrir a intensidade com leveza, com charme, com a energia do Sanguíneo. É uma adaptação inteligente. E cara.","O custo de viver no adaptado é duplo: você gasta energia sustentando uma versão mais suave do que realmente é, e as pessoas nunca chegam a conhecer a sua força real. A liderança que você poderia exercer fica filtrada por uma performance de agradabilidade que não é sua origem.","Nas quatro áreas do Ponto de Ruptura, esse padrão aparece assim: em Deus, há uma espiritualidade performática que não sustenta a âncora real. Em si mesmo, há um homem que não se permite ser visto na sua intensidade. Na família, há calor, mas a liderança está diluída. No negócio, há relacionamento, mas falta a decisão que só o Fogo toma."]},
+    'COL-FLE':{titulo:"Você se adapta à estabilidade, mas o fogo quer sair",corpo:["Seu temperamento real é o do Fogo. Mas sob pressão ou expectativa, você aprendeu a se conter, a processar, a parecer mais calmo e ponderado do que realmente está. É uma adaptação que funciona socialmente. E tem um preço alto.","O custo de viver no adaptado é a energia constante de segurar o que quer explodir. A ira que não é expressa não desaparece. Ela migra para a saúde, para a distância emocional, para a frieza que as pessoas próximas sentem sem entender de onde vem.","Nas quatro áreas do Ponto de Ruptura: em Deus, a espiritualidade é mais controlada do que viva. Em si mesmo, há um homem que aprendeu a não se mostrar. Na família, há presença, mas a liderança está contida. No negócio, há consistência, mas faltam as decisões corajosas que o Fogo tomaria sem hesitar."]},
+    'COL-MEL':{titulo:"Você analisa onde deveria agir",corpo:["Seu temperamento real é o do Fogo. Mas sob pressão e exposição, você aprendeu a recuar para a análise, para a reflexão, para a profundidade do Melancólico. É um mecanismo de proteção. E tem um custo.","O custo de viver no adaptado é a ação represada. O colérico que se adapta ao melancólico não explode, paralisa. E a paralisia, para um homem de fogo, é a forma mais silenciosa de sofrimento. Há uma raiva guardada de não ter agido quando sabia que devia.","Nas quatro áreas do Ponto de Ruptura: em Deus, há reflexão sem entrega. Em si mesmo, há análise sem ação transformadora. Na família, há presença intelectual mas ausência de liderança ativa. No negócio, há diagnóstico perfeito das decisões que precisam ser tomadas, e adiamento crônico de tomá-las."]},
+    'SAN-COL':{titulo:"Você age com força onde deveria criar conexão",corpo:["Seu temperamento real é o do Ar. Mas sob pressão, exposição e avaliação, você adota a postura do Fogo: mais diretivo, mais intenso, mais assertivo do que sua natureza pede. Você aprendeu que leveza não basta em certos ambientes.","O custo de viver no adaptado é a relação. O sanguíneo que se torna colérico sob pressão perde exatamente o que mais tem de valor: a capacidade de criar ambientes onde as pessoas se sentem seguras para falar. A intensidade afasta o que a leveza atrairia.","Nas quatro áreas do Ponto de Ruptura: em Deus, há espiritualidade performática de força em vez de intimidade real. Em si mesmo, há um homem que não sabe como ser visto sem ser intenso. Na família, há um pai ou marido que as pessoas respeitam mas não acessam. No negócio, há um líder que faz acontecer mas não cria cultura."]},
+    'SAN-FLE':{titulo:"Você se esconde onde deveria se iluminar",corpo:["Seu temperamento real é o do Ar. Mas sob pressão, você aprendeu a se conter, a parecer mais ponderado, mais estável, mais calculado do que realmente é. É um ajuste aprendido. E tem um custo.","O custo de viver no adaptado é a invisibilidade. O sanguíneo que se adapta ao fleumático não ilumina os ambientes que poderia iluminar. Há uma alegria contida, uma expressividade guardada, uma conexão que não acontece porque você aprendeu que demonstrar entusiasmo é expor demais.","Nas quatro áreas do Ponto de Ruptura: em Deus, há uma espiritualidade contida que não alcança a intimidade que o Ar precisa. Em si mesmo, há um homem que aprendeu a ser menor do que é. Na família, há presença, mas a energia que poderia transformar o ambiente está guardada. No negócio, há confiabilidade, mas falta a faísca que inspira."]},
+    'SAN-MEL':{titulo:"Você carrega o peso que outros deixaram para trás",corpo:["Seu temperamento real é o do Ar. Mas sob pressão e exposição, você adota a profundidade do Melancólico, mais analítico, mais sério, mais cauteloso do que sua natureza pede. É uma adaptação que parece maturidade. E tem um custo.","O custo de viver no adaptado é a alegria. O sanguíneo que se adapta ao melancólico começa a carregar pesos que não são seus, a processar em loop situações que sua natureza resolveria com leveza, a transformar em drama o que poderia ser apenas um capítulo.","Nas quatro áreas do Ponto de Ruptura: em Deus, há uma espiritualidade pesada onde deveria haver intimidade viva. Em si mesmo, há um homem que perdeu o contato com a leveza que é sua força. Na família, a alegria que aqueceria o ambiente está suprimida. No negócio, há análise onde deveria haver movimento."]},
+    'FLE-COL':{titulo:"Você assume o controle onde deveria trazer paz",corpo:["Seu temperamento real é o da Água. Mas sob pressão ou avaliação, você adota a postura do Fogo: mais assertivo, mais diretivo, mais intenso do que sua natureza pede. Você aprendeu que calma não é suficiente quando o mundo exige resultado.","O custo de viver no adaptado é a autenticidade. O fleumático que se adapta ao colérico perde a sua maior força, a capacidade de ser a presença que estabiliza. Quando você adota a intensidade do Fogo, as pessoas ao redor não têm mais onde se ancorar.","Nas quatro áreas do Ponto de Ruptura: em Deus, há uma espiritualidade de performance em vez de profundidade tranquila. Em si mesmo, há um homem que não acredita que sua paz tem poder. Na família, oscila entre calma e explosão, e a família aprendeu a não saber com qual versão vai se deparar. No negócio, há decisões tomadas no impulso que custam mais do que a análise custaria."]},
+    'FLE-SAN':{titulo:"Você performa alegria onde preferia silêncio",corpo:["Seu temperamento real é o da Água. Mas sob pressão social e expectativa, você adota a energia do Sanguíneo, mais expansivo, mais expressivo, mais conectado do que sua natureza precisa. Você aprendeu que parecer acessível é necessário.","O custo de viver no adaptado é o esgotamento. O fleumático que performa o sanguíneo gasta energia em conexão social que não recarrega. Você vai para os eventos, sorri, cria relacionamentos, e chega em casa vazio de uma forma que as pessoas que estavam com você não conseguem entender.","Nas quatro áreas do Ponto de Ruptura: em Deus, há uma espiritualidade expressiva que não tem raiz de silêncio. Em si mesmo, há um homem que não se permite o recolhimento que o restaura. Na família, há presença animada, mas há uma distância emocional real por baixo. No negócio, há relacionamento construído, mas as decisões difíceis e solitárias ainda estão sendo evitadas."]},
+    'FLE-MEL':{titulo:"Você analisa em loop onde poderia apenas estar presente",corpo:["Seu temperamento real é o da Água. Mas sob pressão, você se aprofunda no Melancólico, mais analítico, mais introspectivo, mais pesado do que sua natureza de base. A profundidade do Melancólico se soma à quietude do Fleumático e cria um silêncio que pode paralisar.","O custo de viver no adaptado é a ação. O fleumático que se adapta ao melancólico não apenas observa, ele processa em excesso. Há um loop interno constante que consome energia sem produzir movimento. E as pessoas ao redor sentem um distanciamento que não conseguem atravessar.","Nas quatro áreas do Ponto de Ruptura: em Deus, há reflexão sem entrega. Em si mesmo, há profundidade sem transformação. Na família, há um homem presente fisicamente mas ausente emocionalmente de uma forma que a família já parou de tentar alcançar. No negócio, há diagnóstico perfeito e decisões sendo adiadas há tempo demais."]},
+    'MEL-COL':{titulo:"Você age com força onde precisava de profundidade",corpo:["Seu temperamento real é o da Terra. Mas sob pressão e exposição, você adota a intensidade do Fogo, mais assertivo, mais decisivo, mais controlador do que sua natureza pede. Você aprendeu que profundidade não impressiona, e que força sim.","O custo de viver no adaptado é a autenticidade e a conexão. O melancólico que se adapta ao colérico perde o que mais tem de valor: a capacidade de sentir com precisão e de criar vínculos profundos. A intensidade que você adota afasta as pessoas que sua profundidade atrairia.","Nas quatro áreas do Ponto de Ruptura: em Deus, há uma espiritualidade de controle em vez de entrega. Em si mesmo, há um homem que aprendeu a esconder a sensibilidade que é sua maior força. Na família, há um pai ou marido que as pessoas temem mais do que acessam. No negócio, há eficiência, mas o time nunca chega perto o suficiente para dar o melhor."]},
+    'MEL-SAN':{titulo:"Você performa leveza onde precisaria de profundidade",corpo:["Seu temperamento real é o da Terra. Mas sob pressão social e expectativa de ambiente, você adota a energia do Sanguíneo, mais leve, mais expansivo, mais acessível do que sua natureza pede. Você aprendeu que profundidade intimida.","O custo de viver no adaptado é o cansaço de não ser visto. O melancólico que performa o sanguíneo está constantemente traduzindo quem é para uma linguagem que não é sua. Funciona. Mas cansa de uma forma que ninguém ao redor consegue entender.","Nas quatro áreas do Ponto de Ruptura: em Deus, há uma espiritualidade social que não tem a profundidade que sua alma pede. Em si mesmo, há um homem que nunca foi visto de verdade por ninguém. Na família, há presença animada, mas vínculos que ficam na superfície porque você aprendeu que profundidade demais assusta. No negócio, há um líder que agrada, mas raramente alguém que transforma."]},
+    'MEL-FLE':{titulo:"Você se esconde onde precisaria de profundidade real",corpo:["Seu temperamento real é o da Terra. Mas sob pressão, você adota a quietude do Fleumático, mais neutro, mais contido, mais estável do que sua natureza realmente está. É uma camada de calma que cobre uma profundidade em ebulição.","O custo de viver no adaptado é a expressão. O melancólico que se adapta ao fleumático não apenas sente fundo, ele sente fundo e guarda tudo. O que não é dito não desaparece. Ele se transforma em distância, em ressentimento guardado, em uma solidão que parece escolha mas é aprisionamento.","Nas quatro áreas do Ponto de Ruptura: em Deus, há uma espiritualidade quieta que nunca chegou à entrega real. Em si mesmo, há um homem que nunca deixou ninguém conhecer de verdade. Na família, há um silêncio que as pessoas próximas já aprenderam a não tentar atravessar. No negócio, há análise e consistência, mas uma invisibilidade de liderança que impede o crescimento real."]},
+  };
+  const g=pares[`${nat}-${ada}`]||{titulo:`Perfil natural (${NOM[nat]}) e adaptado (${NOM[ada]}) diferentes`,corpo:["Seu temperamento real opera de forma diferente do temperamento que você apresenta sob pressão. Essa diferença tem um nome: custo de adaptação.","Toda vez que o ambiente exige que você seja diferente do que é, você gasta energia sustentando essa versão. Energia que poderia ir para o que realmente importa.","O homem integrado não é aquele que nunca se adapta. É aquele que sabe quando está se adaptando e por quê. Que faz isso por escolha, não por medo de ser visto como é."]};
+  return{...g,cor:CORS[nat],bg:`${CORS[nat]}08`,border:`${CORS[nat]}33`};
+}
+
+const ENC={
+  COL:{bg:"rgba(200,90,53,.08)",border:"rgba(200,90,53,.25)",cor:"#c85a35",titulo:"O fogo que você carrega tem um custo.",corpo:["A mesma força que te faz conquistar resultados onde outros desistem cobra um preço das pessoas que estão mais perto de você.","Não são os inimigos que mais sentem o peso do seu fogo. São o cônjuge que aprende a não contrariar. O filho que cresce medindo o seu humor antes de falar. O colaborador que concorda em voz alta e age diferente em silêncio. Eles não vão te dizer, porque conhecem a sua reação.","Paulo foi o maior colérico da Bíblia. E sua maior carta não foi escrita do pódio. Foi escrita do cárcere. Quando não podia agir, aprendeu a depender. É lá que ele escreve: aprendi a estar contente em qualquer situação. Não nasceu assim. Aprendeu."],destaque:"O que você conquistou com sua força impressiona. O que você vai construir quando ela estiver submetida vai transformar.",ctaLbl:"O próximo passo",ctaTxt:"O Ponto de Ruptura existe para o homem que já provou que tem força, mas percebeu que força sozinha não é suficiente. É aqui que a força encontra governo.",ctaBtn:"Conhecer o Ponto de Ruptura"},
+  SAN:{bg:"rgba(74,144,217,.08)",border:"rgba(74,144,217,.25)",cor:"#4a90d9",titulo:"Você tem um dom que o mundo precisa. E um padrão que o impede de entregá-lo.",corpo:["Sua alegria é genuína. Sua capacidade de animar um ambiente, de criar conexão do nada, de ver o bem em qualquer situação, isso não é performance. É quem você é. E é um presente raro.","O problema não é o dom. É que ele vem embrulhado em inconstância. Você começa com tudo: entusiasmo, visão, energia. E quando o sentimento esfria, o compromisso vai junto. As pessoas que mais te amam já aprenderam a não contar com o que você promete quando está animado.","Pedro era assim. Negou Jesus três vezes não por maldade, mas porque o humor do momento atropelou o compromisso eterno. Depois de Pentecostes, era o mesmo temperamento. Mas desta vez, quando o barco balançou, não afundou."],destaque:"A versão de você que é fiel quando não está mais animado é a versão que vai mudar as histórias das pessoas ao seu redor.",ctaLbl:"O próximo passo",ctaTxt:"O Ponto de Ruptura foi construído para o homem que sente muito, começa muito e quer aprender a sustentar. Não é sobre frear quem você é. É sobre ancorar.",ctaBtn:"Conhecer o Ponto de Ruptura"},
+  FLE:{bg:"rgba(74,140,106,.08)",border:"rgba(74,140,106,.25)",cor:"#4a8c6a",titulo:"Você tem tempo. Mas o silêncio também tem um custo.",corpo:["Não tem pressa com você, e tudo bem. Você processa bem quando tem espaço. Decide melhor quando não é pressionado. E isso é sabedoria real, não fraqueza.","Mas há algo que vale nomear com honestidade: o que você chama de paz, às vezes, é evitação. A conversa que você adiou há meses. O posicionamento que nunca veio. A liderança que você abdica porque o conflito parece custar mais do que vale.","As pessoas que te amam não precisam de mais de você. Precisam de algo específico: saber que você está lá de verdade. Não apenas presente. Presente."],destaque:"São Tomás de Aquino ficou em silêncio por anos. Quando falou, mudou o mundo. Você não precisa mudar o mundo. Precisa mudar uma conversa. Qual é ela?",ctaLbl:"Quando estiver pronto",ctaTxt:"O Ponto de Ruptura não vai te pressionar. Vai te dar o espaço e a estrutura para finalmente sair do lugar que você sabe que precisa sair. No seu ritmo, com clareza real.",ctaBtn:"Conhecer o Ponto de Ruptura"},
+  MEL:{bg:"rgba(140,106,173,.08)",border:"rgba(140,106,173,.25)",cor:"#8c6aad",titulo:"Você sente mais fundo do que a maioria. E carrega mais do que deveria.",corpo:["Isso não precisa ser consertado. A profundidade com que você sente, a precisão com que analisa, a lealdade com que ama, essas coisas são reais e são raras. O mundo precisa de pessoas que não aceitam o superficial.","Mas há uma pergunta que vale fazer com honestidade: o quanto dessa profundidade está servindo ao crescimento, e o quanto está alimentando um loop? A memória que reprocessa o que deveria ter sido esquecido. O padrão impossível que você aplica a si mesmo com uma dureza que jamais usaria com alguém que ama.","João era o melancólico mais profundo do Novo Testamento. O único que ficou ao pé da cruz. Sua profundidade não era fraqueza. Era a raiz da coragem mais silenciosa da história."],destaque:"Você não precisa mudar quem você é. Precisa aprender a usar a profundidade a seu favor e parar de usá-la contra si mesmo.",ctaLbl:"Uma reflexão, antes de seguir",ctaTxt:"O Ponto de Ruptura existe para o homem que sente com profundidade mas ainda não transformou isso em movimento. Um processo real, com a seriedade que você merece.",ctaBtn:"Conhecer o Ponto de Ruptura"},
+};
+
+function dom(sc){return Object.keys(sc).reduce((a,b)=>sc[a]>sc[b]?a:b)}
+function pct(sc,mx){return Object.fromEntries(Object.keys(sc).map(k=>[k,Math.round(sc[k]/mx*100)]))}
+
+let E={tela:'cap',qi:0,res1:[],res2:[],sc1:{SAN:0,COL:0,FLE:0,MEL:0},sc2:{SAN:0,COL:0,FLE:0,MEL:0},nome:'',email:'',nat:null,ada:null,sec:-1,ok:false};
+function curQ(){return E.qi<10?R1[E.qi]:R2[E.qi-10]}
+function curRes(){return E.qi<10?E.res1[E.qi]:E.res2[E.qi-10]}
+function setCurRes(i){E.qi<10?E.res1[E.qi]=i:E.res2[E.qi-10]=i}
+function curSc(){return E.qi<10?E.sc1:E.sc2}
+
+function render(){
+  const r=document.getElementById('root');
+  if(E.tela==='cap') r.innerHTML=rCap();
+  else if(E.tela==='quiz') r.innerHTML=rQuiz();
+  else if(E.tela==='trans') r.innerHTML=rTrans();
+  else if(E.tela==='res') r.innerHTML=rRes();
+  bind();
+}
+
+function rCap(){return`
+<div class="card" style="text-align:center;padding:2.5rem">
+  <p style="font-family:'Cormorant Garamond',serif;font-size:1.15rem;line-height:1.85;margin-bottom:1.5rem">
+    Você está prestes a descobrir a estrutura básica da sua alma, a forma como nasceu para reagir ao mundo, às pessoas e aos desafios.<br><br>
+    Não existem respostas certas. Existem respostas honestas.
+  </p>
+  <p style="color:var(--weak);font-size:.85rem;margin-bottom:2rem">20 perguntas em duas rodadas · Resultado imediato · Diagnóstico enviado por email</p>
+</div>
+<div class="card">
+  <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:500;color:var(--amber);margin-bottom:.4rem">Antes de começar</h2>
+  <p style="color:var(--weak);font-size:.88rem;margin-bottom:1.5rem">Informe seus dados para receber a análise completa por email.</p>
+  <div><label>Seu nome</label><input type="text" id="inp-n" placeholder="Como quer ser chamado" value="${E.nome}"></div>
+  <div><label>Seu email</label><input type="email" id="inp-e" placeholder="email@exemplo.com" value="${E.email}"></div>
+  <button class="btn-on" id="btn-c" style="width:100%;margin-top:.25rem">Iniciar análise</button>
+  <p style="color:var(--weak);font-size:.78rem;margin-top:1rem;text-align:center">Suas respostas são confidenciais.</p>
+</div>`}
+
+function rTrans(){return`
+<div class="card transicao">
+  <div style="font-size:2rem;margin-bottom:1rem">🔄</div>
+  <h2>Segunda parte</h2>
+  <p>As próximas 10 perguntas têm um contexto diferente: situações de pressão, avaliação e exposição. Responda com a mesma honestidade da primeira parte.</p>
+  <p style="font-size:.82rem">Não existe resposta certa. Existe a sua resposta.</p>
+  <button class="btn-on2" id="btn-trans" style="margin-top:.5rem">Continuar →</button>
+</div>`}
+
+function rQuiz(){
+  const rod=E.qi<10?1:2,q=curQ(),sel=curRes(),hasSel=sel!==undefined,isR2=rod===2,qL=isR2?E.qi-10:E.qi;
+  const prog1=Array.from({length:10},(_,i)=>{if(E.qi>=10)return'<div class="pi done"></div>';if(i<E.qi)return'<div class="pi done"></div>';if(i===E.qi)return'<div class="pi cur"></div>';return'<div class="pi"></div>';}).join('');
+  const prog2=Array.from({length:10},(_,i)=>{if(E.qi<10)return'<div class="pi"></div>';if(i<E.qi-10)return'<div class="pi done2"></div>';if(i===E.qi-10)return'<div class="pi cur2"></div>';return'<div class="pi"></div>';}).join('');
+  const sc=isR2?'sel2':'sel';
+  const ops=q.ops.map((o,i)=>`<button class="op${sel===i?' '+sc:''}" data-i="${i}">${o.t}</button>`).join('');
+  const ult=E.qi===TOTAL-1,lbl=ult?'Ver resultado →':'Próxima →';
+  const tagStyle=isR2?'background:rgba(140,106,173,.15);color:#b89fd4;border:1px solid rgba(140,106,173,.3)':'background:rgba(200,169,122,.1);color:var(--amber);border:1px solid rgba(200,169,122,.2)';
+  const btnNext=hasSel?(isR2?`<button class="btn-on2" id="btn-n">${lbl}</button>`:`<button class="btn-on" id="btn-n">${lbl}</button>`):`<button class="btn-off">${lbl}</button>`;
+  return`
+<div class="prog-wrap">
+  <div class="prog-label">
+    <span class="prog-tag" style="${tagStyle}">${isR2?'Rodada 2 · Como você age sob pressão':'Rodada 1 · Como você age no dia a dia'}</span>
+    <span class="prog-count">${qL+1} / 10</span>
+  </div>
+  <div class="prog">${prog1}${prog2}</div>
+</div>
+<div class="card">
+  <div class="qtxt">${q.txt}</div>
+  <div class="ops">${ops}</div>
+</div>
+<div class="nav">
+  <button class="btn" id="btn-p" ${E.qi===0?'disabled':''}>← Anterior</button>
+  ${btnNext}
+</div>`}
+
+function rRes(){
+  const nat=E.nat,ada=E.ada,enc=ENC[nat],gap=textoGap(nat,ada);
+  const p1=pct(E.sc1,R1.length*3),p2=pct(E.sc2,R2.length*3);
+  const mesmos=nat===ada,corN=CORS[nat],corA=CORS[ada];
+  const secs=SECS[nat];
+  const fortes=FORTES[nat].map(f=>`<li>${f}</li>`).join('');
+  const desenv=DESENVOLVER[nat].map(f=>`<li>${f}</li>`).join('');
+  return`
+<div class="res">
+  ${E.ok?`<div class="eok">✓ Diagnóstico enviado para <strong>${E.email}</strong></div>`:''}
+  <div class="perfis-grid">
+    <div class="perfil-card" style="background:${corN}12;border:1.5px solid ${corN}44">
+      <div class="pc-label" style="color:${corN}">Temperamento Natural</div>
+      <div class="pc-emoji">${EMJ[nat]}</div>
+      <div class="pc-nome" style="color:${corN}">${NOM[nat]}</div>
+      <div class="pc-sub" style="color:${corN}88">${ELE[nat]}</div>
+      <div class="pc-pct" style="color:${corN}">Score ${p1[nat]}%</div>
+    </div>
+    <div class="perfil-card" style="background:${corA}12;border:1.5px solid ${mesmos?corA+'44':corA+'66'}">
+      <div class="pc-label" style="color:${corA}">${mesmos?'Confirmado sob pressão':'Temperamento Adaptado'}</div>
+      <div class="pc-emoji">${EMJ[ada]}</div>
+      <div class="pc-nome" style="color:${corA}">${NOM[ada]}</div>
+      <div class="pc-sub" style="color:${corA}88">${ELE[ada]}</div>
+      <div class="pc-pct" style="color:${corA}">Score ${p2[ada]}%</div>
+    </div>
+  </div>
+  <div class="gap-card" style="background:${gap.bg};border:1px solid ${gap.border}">
+    <div class="gap-title" style="color:${gap.cor}">${gap.titulo}</div>
+    <div class="gap-body">${gap.corpo.map(p=>`<p>${p}</p>`).join('')}</div>
+  </div>
+  <div class="sec-header">Análise completa do seu temperamento natural</div>
+  <div style="margin-bottom:2rem">
+    ${secs.map((s,i)=>`
+    <div class="aci">
+      <button class="ab" data-si="${i}">
+        <span class="at" style="color:${E.sec===i?corN:'var(--text)'}">${s.t}</span>
+        <span style="color:var(--weak);font-size:1rem">${E.sec===i?'−':'+'}</span>
+      </button>
+      ${E.sec===i?`<div class="ad">${s.c.map(p=>`<p>${p}</p>`).join('')}</div>`:''}
+    </div>`).join('')}
+  </div>
+  <div class="grid2">
+    <div class="lcard lf"><h4>Pontos fortes</h4><ul>${fortes}</ul></div>
+    <div class="lcard ld"><h4>A desenvolver</h4><ul>${desenv}</ul></div>
+  </div>
+  <div class="enc" style="background:${enc.bg};border:1px solid ${enc.border}">
+    <div class="et">
+      <div class="etit" style="color:${enc.cor}">${enc.titulo}</div>
+      ${enc.corpo.map(p=>`<p class="ep">${p}</p>`).join('')}
+      <div class="edes" style="background:${enc.bg};border-color:${enc.cor};color:${enc.cor}">${enc.destaque}</div>
+    </div>
+    <div class="ecta" style="background:rgba(0,0,0,.2);border-top:1px solid ${enc.border}">
+      <div class="ectlbl" style="color:${enc.cor}">${enc.ctaLbl}</div>
+      <p class="ecttxt">${enc.ctaTxt}</p>
+      <a href="https://wa.me/5543996694899" class="ectbtn" style="color:${enc.cor};border-color:${enc.cor}">${enc.ctaBtn}</a>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:2rem">
+    <button class="btn" id="btn-r">Refazer análise</button>
+  </div>
+</div>`}
+
+async function enviar(){
+  try{
+    await fetch('/api/enviar',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({nome:E.nome,email:E.email,temperamentoNatural:E.nat,temperamentoAdaptado:E.ada,sc1:E.sc1,sc2:E.sc2})});
+    E.ok=true;render();
+  }catch(e){console.error(e)}
+}
+
+function bind(){
+  document.getElementById('btn-c')?.addEventListener('click',()=>{
+    const n=document.getElementById('inp-n').value.trim(),em=document.getElementById('inp-e').value.trim();
+    if(!n||!em){alert('Preencha seu nome e email para continuar.');return}
+    E.nome=n;E.email=em;E.tela='quiz';render();
+  });
+  document.getElementById('btn-trans')?.addEventListener('click',()=>{E.tela='quiz';render()});
+  document.getElementById('btn-p')?.addEventListener('click',()=>{if(E.qi>0){E.qi--;render();}});
+  document.getElementById('btn-n')?.addEventListener('click',()=>{
+    if(E.qi===9){E.qi=10;E.tela='trans';render();return}
+    if(E.qi<TOTAL-1){E.qi++;render();}
+    else{E.nat=dom(E.sc1);E.ada=dom(E.sc2);E.tela='res';render();enviar();}
+  });
+  document.querySelectorAll('.op').forEach(b=>b.addEventListener('click',()=>{
+    const i=parseInt(b.dataset.i),pv=curRes(),q=curQ(),sc=curSc();
+    if(pv!==undefined){const o=q.ops[pv].s;sc.SAN-=o.SAN;sc.COL-=o.COL;sc.FLE-=o.FLE;sc.MEL-=o.MEL}
+    setCurRes(i);const o=q.ops[i].s;sc.SAN+=o.SAN;sc.COL+=o.COL;sc.FLE+=o.FLE;sc.MEL+=o.MEL;
+    render();
+  }));
+  document.getElementById('btn-r')?.addEventListener('click',()=>{
+    E={tela:'cap',qi:0,res1:[],res2:[],sc1:{SAN:0,COL:0,FLE:0,MEL:0},sc2:{SAN:0,COL:0,FLE:0,MEL:0},nome:'',email:'',nat:null,ada:null,sec:-1,ok:false};render();
+  });
+  document.querySelectorAll('[data-si]').forEach(b=>b.addEventListener('click',()=>{
+    const i=parseInt(b.dataset.si);E.sec=E.sec===i?-1:i;render();
+  }));
+}
+render();
+</script>
+</body>
+</html>
