@@ -4,7 +4,7 @@ const RESEND_KEY   = process.env.RESEND_API_KEY;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const FROM         = "resultado@claudioalecrim.com.br";
-const ADMIN        = "resultado.mesadegoverno@gmail.com";
+
 
 const NOMES = { SAN:"Sanguíneo", COL:"Colérico", FLE:"Fleumático", MEL:"Melancólico" };
 const EMOJIS = { SAN:"☀️", COL:"🔥", FLE:"🌊", MEL:"🌑" };
@@ -216,25 +216,13 @@ export default async function handler(req, res) {
     }),
   });
 
-  const emailAdmin = fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      from: FROM,
-      to: [ADMIN],
-      subject: `[Diagnóstico Temperamento] ${nome} — ${NOMES[nat]} / Adaptado: ${NOMES[ada]}`,
-      html: `<p><b>Nome:</b> ${nome}</p><p><b>Email:</b> ${email}</p><p><b>Natural:</b> ${NOMES[nat]}</p><p><b>Adaptado:</b> ${NOMES[ada]}</p><p><b>Alinhado:</b> ${nat === ada ? "Sim" : "Não"}</p>`,
-    }),
-  });
-
   const supabase = salvarSupabase(nome, email, nat, ada, sc1, sc2);
 
-  const [r1, r2, r3] = await Promise.allSettled([emailUsuario, emailAdmin, supabase]);
+  const [r1, r2] = await Promise.allSettled([emailUsuario, supabase]);
 
   return res.status(r1.status === "fulfilled" ? 200 : 500).json({
     ok: r1.status === "fulfilled",
     email: r1.status,
-    admin: r2.status,
-    supabase: r3.status,
+    supabase: r2.status,
   });
 }
